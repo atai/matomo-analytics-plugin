@@ -1,39 +1,38 @@
 package io.jenkins.plugins.matomoanalytics;
 
 import hudson.model.PageDecorator;
+import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Tests for configuration and persistence of {@link MatomoPageDecorator}.
  */
+@WithJenkins
 public class MatomoPageDecoratorConfigurationTest {
 
-    @Rule
-    public JenkinsRule jenkins = new JenkinsRule();
-
     @Test
-    public void testDefaultValues() {
-        MatomoPageDecorator decorator = jenkins.getInstance().getExtensionList(PageDecorator.class)
+    public void testDefaultValues(JenkinsRule jenkinsRule) {
+        MatomoPageDecorator decorator = jenkinsRule.getInstance().getExtensionList(PageDecorator.class)
                 .get(MatomoPageDecorator.class);
         
         // Test default values
-        assertNull("Default site ID should be null", decorator.getMatomoSiteID());
-        assertNull("Default server should be null", decorator.getMatomoServer());
-        assertNull("Default path should be null", decorator.getMatomoPath());
-        assertNull("Default PHP file should be null", decorator.getMatomoPhp());
-        assertNull("Default JS file should be null", decorator.getMatomoJs());
-        assertTrue("Default should use HTTPS", decorator.isMatomoUseHttps());
-        assertFalse("Default should not send user ID", decorator.isMatomoSendUserID());
+        assertNull(decorator.getMatomoSiteID(), "Default site ID should be null");
+        assertNull(decorator.getMatomoServer(), "Default server should be null");
+        assertNull(decorator.getMatomoPath(), "Default path should be null");
+        assertNull(decorator.getMatomoPhp(), "Default PHP file should be null");
+        assertNull(decorator.getMatomoJs(), "Default JS file should be null");
+        assertTrue(decorator.isMatomoUseHttps(), "Default should use HTTPS");
+        assertFalse(decorator.isMatomoSendUserID(), "Default should not send user ID");
     }
 
     @Test
-    public void testConfigurationPersistence() throws Exception {
-        MatomoPageDecorator decorator = jenkins.getInstance().getExtensionList(PageDecorator.class)
+    public void testConfigurationPersistence(JenkinsRule jenkinsRule) throws Exception {
+        MatomoPageDecorator decorator = jenkinsRule.getInstance().getExtensionList(PageDecorator.class)
                 .get(MatomoPageDecorator.class);
 
         // Set configuration
@@ -53,24 +52,24 @@ public class MatomoPageDecoratorConfigurationTest {
         decorator.save();
 
         // Reload Jenkins instance to test persistence
-        jenkins.getInstance().reload();
+        jenkinsRule.getInstance().reload();
 
         // Verify configuration persisted
-        MatomoPageDecorator reloadedDecorator = jenkins.getInstance()
+        MatomoPageDecorator reloadedDecorator = jenkinsRule.getInstance()
                 .getExtensionList(PageDecorator.class).get(MatomoPageDecorator.class);
 
-        assertEquals("Site ID should persist", siteID, reloadedDecorator.getMatomoSiteID());
-        assertEquals("Server should persist", server, reloadedDecorator.getMatomoServer());
-        assertEquals("Path should persist", path, reloadedDecorator.getMatomoPath());
-        assertEquals("PHP file should persist", php, reloadedDecorator.getMatomoPhp());
-        assertEquals("JS file should persist", js, reloadedDecorator.getMatomoJs());
-        assertFalse("HTTPS setting should persist", reloadedDecorator.isMatomoUseHttps());
-        assertTrue("Send user ID setting should persist", reloadedDecorator.isMatomoSendUserID());
+        assertEquals(siteID, reloadedDecorator.getMatomoSiteID(), "Site ID should persist");
+        assertEquals(server, reloadedDecorator.getMatomoServer(), "Server should persist");
+        assertEquals(path, reloadedDecorator.getMatomoPath(), "Path should persist");
+        assertEquals(php, reloadedDecorator.getMatomoPhp(), "PHP file should persist");
+        assertEquals(js, reloadedDecorator.getMatomoJs(), "JS file should persist");
+        assertFalse(reloadedDecorator.isMatomoUseHttps(), "HTTPS setting should persist");
+        assertTrue(reloadedDecorator.isMatomoSendUserID(), "Send user ID setting should persist");
     }
 
     @Test
-    public void testNullValuesHandling() {
-        MatomoPageDecorator decorator = jenkins.getInstance().getExtensionList(PageDecorator.class)
+    public void testNullValuesHandling(JenkinsRule jenkinsRule) {
+        MatomoPageDecorator decorator = jenkinsRule.getInstance().getExtensionList(PageDecorator.class)
                 .get(MatomoPageDecorator.class);
 
         // Set some values
@@ -84,46 +83,46 @@ public class MatomoPageDecoratorConfigurationTest {
         decorator.setMatomoPhp(null);
         decorator.setMatomoJs(null);
 
-        assertNull("Site ID should be null", decorator.getMatomoSiteID());
-        assertNull("Server should be null", decorator.getMatomoServer());
-        assertNull("Path should be null", decorator.getMatomoPath());
-        assertNull("PHP file should be null", decorator.getMatomoPhp());
-        assertNull("JS file should be null", decorator.getMatomoJs());
+        assertNull(decorator.getMatomoSiteID(), "Site ID should be null");
+        assertNull(decorator.getMatomoServer(), "Server should be null");
+        assertNull(decorator.getMatomoPath(), "Path should be null");
+        assertNull(decorator.getMatomoPhp(), "PHP file should be null");
+        assertNull(decorator.getMatomoJs(), "JS file should be null");
     }
 
     @Test
-    public void testEmptyStringValues() {
-        MatomoPageDecorator decorator = jenkins.getInstance().getExtensionList(PageDecorator.class)
+    public void testEmptyStringValues(JenkinsRule jenkinsRule) {
+        MatomoPageDecorator decorator = jenkinsRule.getInstance().getExtensionList(PageDecorator.class)
                 .get(MatomoPageDecorator.class);
 
         decorator.setMatomoSiteID("");
         decorator.setMatomoServer("");
         decorator.setMatomoPath("");
 
-        assertEquals("Empty site ID should be stored", "", decorator.getMatomoSiteID());
-        assertEquals("Empty server should be stored", "", decorator.getMatomoServer());
-        assertEquals("Empty path should be stored", "", decorator.getMatomoPath());
+        assertEquals("", decorator.getMatomoSiteID(), "Empty site ID should be stored");
+        assertEquals("", decorator.getMatomoServer(), "Empty server should be stored");
+        assertEquals("", decorator.getMatomoPath(), "Empty path should be stored");
     }
 
     @Test
-    public void testProtocolStringChanges() {
-        MatomoPageDecorator decorator = jenkins.getInstance().getExtensionList(PageDecorator.class)
+    public void testProtocolStringChanges(JenkinsRule jenkinsRule) {
+        MatomoPageDecorator decorator = jenkinsRule.getInstance().getExtensionList(PageDecorator.class)
                 .get(MatomoPageDecorator.class);
 
         decorator.setMatomoUseHttps(true);
-        assertEquals("Should return https://", "https://", decorator.getProtocolString());
+        assertEquals("https://", decorator.getProtocolString(), "Should return https://");
 
         decorator.setMatomoUseHttps(false);
-        assertEquals("Should return http://", "http://", decorator.getProtocolString());
+        assertEquals("http://", decorator.getProtocolString(), "Should return http://");
 
         // Toggle back
         decorator.setMatomoUseHttps(true);
-        assertEquals("Should return https:// again", "https://", decorator.getProtocolString());
+        assertEquals("https://", decorator.getProtocolString(), "Should return https:// again");
     }
 
     @Test
-    public void testMultipleConfigurationChanges() {
-        MatomoPageDecorator decorator = jenkins.getInstance().getExtensionList(PageDecorator.class)
+    public void testMultipleConfigurationChanges(JenkinsRule jenkinsRule) {
+        MatomoPageDecorator decorator = jenkinsRule.getInstance().getExtensionList(PageDecorator.class)
                 .get(MatomoPageDecorator.class);
 
         // First configuration

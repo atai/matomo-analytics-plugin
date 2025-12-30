@@ -1,28 +1,27 @@
 package io.jenkins.plugins.matomoanalytics;
 
 import hudson.model.PageDecorator;
-import org.junit.Rule;
-import org.junit.Test;
+import jenkins.model.Jenkins;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Integration tests for {@link MatomoPageDecorator} to verify CSP compliance.
  * These tests ensure that the footer.jelly template does not contain inline scripts
  * that would violate Jenkins Content Security Policy.
  */
+@WithJenkins
 public class MatomoPageDecoratorCSPTest {
 
-    @Rule
-    public JenkinsRule jenkins = new JenkinsRule();
-
     @Test
-    public void testFooterRenderingWithConfiguration() throws Exception {
-        MatomoPageDecorator decorator = jenkins.getInstance().getExtensionList(PageDecorator.class)
+    public void testFooterRenderingWithConfiguration(JenkinsRule jenkinsRule) throws Exception {
+        MatomoPageDecorator decorator = jenkinsRule.getInstance().getExtensionList(PageDecorator.class)
                 .get(MatomoPageDecorator.class);
 
         // Configure the decorator
@@ -36,7 +35,7 @@ public class MatomoPageDecoratorCSPTest {
         decorator.save();
 
         // Load a page to trigger footer rendering
-        WebClient webClient = jenkins.createWebClient();
+        WebClient webClient = jenkinsRule.createWebClient();
         var page = webClient.goTo("");
 
         String pageContent = page.asXml();
@@ -44,12 +43,12 @@ public class MatomoPageDecoratorCSPTest {
         // Verify that the page contains Matomo configuration
         // After CSP fix, we should check for external script reference and data attributes
         // For now, we check that the page decorator is active
-        assertNotNull("Page should be loaded", page);
+        assertNotNull(page, "Page should be loaded");
     }
 
     @Test
-    public void testFooterRenderingWithoutConfiguration() throws Exception {
-        MatomoPageDecorator decorator = jenkins.getInstance().getExtensionList(PageDecorator.class)
+    public void testFooterRenderingWithoutConfiguration(JenkinsRule jenkinsRule) throws Exception {
+        MatomoPageDecorator decorator = jenkinsRule.getInstance().getExtensionList(PageDecorator.class)
                 .get(MatomoPageDecorator.class);
 
         // Clear configuration
@@ -57,19 +56,19 @@ public class MatomoPageDecoratorCSPTest {
         decorator.setMatomoServer(null);
         decorator.save();
 
-        WebClient webClient = jenkins.createWebClient();
+        WebClient webClient = jenkinsRule.createWebClient();
         var page = webClient.goTo("");
 
         String pageContent = page.asXml();
 
         // When not configured, footer should not render Matomo code
         // Verify no Matomo-related content is present
-        assertNotNull("Page should be loaded", page);
+        assertNotNull(page, "Page should be loaded");
     }
 
     @Test
-    public void testNoInlineScriptsInFooter() throws Exception {
-        MatomoPageDecorator decorator = jenkins.getInstance().getExtensionList(PageDecorator.class)
+    public void testNoInlineScriptsInFooter(JenkinsRule jenkinsRule) throws Exception {
+        MatomoPageDecorator decorator = jenkinsRule.getInstance().getExtensionList(PageDecorator.class)
                 .get(MatomoPageDecorator.class);
 
         decorator.setMatomoSiteID("1");
@@ -77,7 +76,7 @@ public class MatomoPageDecoratorCSPTest {
         decorator.setMatomoPath("/");
         decorator.save();
 
-        WebClient webClient = jenkins.createWebClient();
+        WebClient webClient = jenkinsRule.createWebClient();
         var page = webClient.goTo("");
 
         String pageContent = page.asXml();
@@ -94,8 +93,8 @@ public class MatomoPageDecoratorCSPTest {
     }
 
     @Test
-    public void testExternalScriptReference() throws Exception {
-        MatomoPageDecorator decorator = jenkins.getInstance().getExtensionList(PageDecorator.class)
+    public void testExternalScriptReference(JenkinsRule jenkinsRule) throws Exception {
+        MatomoPageDecorator decorator = jenkinsRule.getInstance().getExtensionList(PageDecorator.class)
                 .get(MatomoPageDecorator.class);
 
         decorator.setMatomoSiteID("1");
@@ -103,7 +102,7 @@ public class MatomoPageDecoratorCSPTest {
         decorator.setMatomoPath("/");
         decorator.save();
 
-        WebClient webClient = jenkins.createWebClient();
+        WebClient webClient = jenkinsRule.createWebClient();
         var page = webClient.goTo("");
 
         String pageContent = page.asXml();
@@ -114,8 +113,8 @@ public class MatomoPageDecoratorCSPTest {
     }
 
     @Test
-    public void testDataAttributesPresent() throws Exception {
-        MatomoPageDecorator decorator = jenkins.getInstance().getExtensionList(PageDecorator.class)
+    public void testDataAttributesPresent(JenkinsRule jenkinsRule) throws Exception {
+        MatomoPageDecorator decorator = jenkinsRule.getInstance().getExtensionList(PageDecorator.class)
                 .get(MatomoPageDecorator.class);
 
         decorator.setMatomoSiteID("42");
@@ -127,7 +126,7 @@ public class MatomoPageDecoratorCSPTest {
         decorator.setMatomoSendUserID(true);
         decorator.save();
 
-        WebClient webClient = jenkins.createWebClient();
+        WebClient webClient = jenkinsRule.createWebClient();
         var page = webClient.goTo("");
 
         String pageContent = page.asXml();

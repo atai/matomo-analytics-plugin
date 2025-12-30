@@ -1,24 +1,23 @@
 package io.jenkins.plugins.matomoanalytics;
 
 import hudson.model.PageDecorator;
+import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Unit tests for {@link MatomoPageDecorator}.
  */
+@WithJenkins
 public class MatomoPageDecoratorTest {
 
-    @Rule
-    public JenkinsRule jenkins = new JenkinsRule();
-
     @Test
-    public void testDefaultConstructor() {
-        MatomoPageDecorator decorator = jenkins.getInstance().getExtensionList(PageDecorator.class)
+    public void testDefaultConstructor(JenkinsRule jenkinsRule) {
+        MatomoPageDecorator decorator = jenkinsRule.getInstance().getExtensionList(PageDecorator.class)
                 .get(MatomoPageDecorator.class);
         assertNotNull(decorator);
         assertNull(decorator.getMatomoSiteID());
@@ -28,7 +27,7 @@ public class MatomoPageDecoratorTest {
     }
 
     @Test
-    public void testDataBoundConstructor() {
+    public void testDataBoundConstructor(JenkinsRule jenkinsRule) {
         String siteID = "1";
         String server = "matomo.example.com";
         String path = "/";
@@ -50,8 +49,8 @@ public class MatomoPageDecoratorTest {
     }
 
     @Test
-    public void testGettersAndSetters() {
-        MatomoPageDecorator decorator = jenkins.getInstance().getExtensionList(PageDecorator.class)
+    public void testGettersAndSetters(JenkinsRule jenkinsRule) {
+        MatomoPageDecorator decorator = jenkinsRule.getInstance().getExtensionList(PageDecorator.class)
                 .get(MatomoPageDecorator.class);
 
         decorator.setMatomoSiteID("2");
@@ -77,33 +76,33 @@ public class MatomoPageDecoratorTest {
     }
 
     @Test
-    public void testGetProtocolStringHttps() {
-        MatomoPageDecorator decorator = jenkins.getInstance().getExtensionList(PageDecorator.class)
+    public void testGetProtocolStringHttps(JenkinsRule jenkinsRule) {
+        MatomoPageDecorator decorator = jenkinsRule.getInstance().getExtensionList(PageDecorator.class)
                 .get(MatomoPageDecorator.class);
         decorator.setMatomoUseHttps(true);
         assertEquals("https://", decorator.getProtocolString());
     }
 
     @Test
-    public void testGetProtocolStringHttp() {
-        MatomoPageDecorator decorator = jenkins.getInstance().getExtensionList(PageDecorator.class)
+    public void testGetProtocolStringHttp(JenkinsRule jenkinsRule) {
+        MatomoPageDecorator decorator = jenkinsRule.getInstance().getExtensionList(PageDecorator.class)
                 .get(MatomoPageDecorator.class);
         decorator.setMatomoUseHttps(false);
         assertEquals("http://", decorator.getProtocolString());
     }
 
     @Test
-    public void testExtensionIsRegistered() {
-        PageDecorator decorator = jenkins.getInstance().getExtensionList(PageDecorator.class)
+    public void testExtensionIsRegistered(JenkinsRule jenkinsRule) {
+        PageDecorator decorator = jenkinsRule.getInstance().getExtensionList(PageDecorator.class)
                 .get(MatomoPageDecorator.class);
-        assertNotNull("MatomoPageDecorator should be registered as an extension", decorator);
-        assertTrue("Decorator should be an instance of MatomoPageDecorator",
-                decorator instanceof MatomoPageDecorator);
+        assertNotNull(decorator, "MatomoPageDecorator should be registered as an extension");
+        assertInstanceOf(MatomoPageDecorator.class, decorator,
+                "Decorator should be an instance of MatomoPageDecorator");
     }
 
     @Test
-    public void testConfigure() throws Exception {
-        MatomoPageDecorator decorator = jenkins.getInstance().getExtensionList(PageDecorator.class)
+    public void testConfigure(JenkinsRule jenkinsRule) throws Exception {
+        MatomoPageDecorator decorator = jenkinsRule.getInstance().getExtensionList(PageDecorator.class)
                 .get(MatomoPageDecorator.class);
 
         JSONObject json = new JSONObject();
